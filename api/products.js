@@ -14,9 +14,9 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  // waitForConnections: true,
-  // connectionLimit: 10, // max number of concurrent connections
-  // queueLimit: 0, // unlimited wait queue length
+  waitForConnections: true,
+  connectionLimit: 10, // max number of concurrent connections
+  queueLimit: 0, // unlimited wait queue length
 });
 
 // Use promise wrapper around pool.query
