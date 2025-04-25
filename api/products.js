@@ -5,6 +5,7 @@ const cors = require('cors');
 // Initialize the Express app
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 // MySQL Pool Connection for better handling in serverless environments
 const pool = mysql.createPool({
