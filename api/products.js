@@ -1,4 +1,10 @@
 import mysql from 'mysql2';
+import express from 'express';
+const cors = require('cors');
+
+// Initialize the Express app
+const app = express();
+app.use(cors());
 
 // MySQL Pool Connection for better handling in serverless environments
 const pool = mysql.createPool({
