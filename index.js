@@ -1,14 +1,14 @@
-// Updated POS Backend (Node.js + Express + MySQL with .env support)
-const express = require("express");
-const mysql = require("mysql2");
-const cors = require("cors");
-require("dotenv").config();
+const express = require('express');
+const mysql = require('mysql2');
+const cors = require('cors');
+require('dotenv').config();
 
+// Initialize the Express app
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MySQL Pool Connection for better handling in serverless environments
+// MySQL Pool Connection for better handling in server environments
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -23,62 +23,54 @@ const pool = mysql.createPool({
 // Use promise wrapper around pool.query
 const promisePool = pool.promise();
 
-export default async function handler(req, res) {
+// Route for getting products (GET /products)
+app.get('/products', async (req, res) => {
   try {
-    const [results] = await promisePool.query("SELECT * FROM products");
-    res.status(200).json(results);
+    const [results] = await promisePool.query('SELECT * FROM products');
+    res.status(200).json(results); // Return products in JSON format
   } catch (err) {
-    res.status(500).json(err);
-  }
-}
-
-db.connect((err) => {
-  if (err) throw err;
-  console.log("MySQL Connected!");
-});
-
-// Routes
-app.get("/products", async (req, res) => {
-  try {
-    const [results] = await promisePool.query("SELECT * FROM products");
-    res.json(results);
-  } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ error: 'Database query failed', details: err });
   }
 });
 
-app.post("/orders", async (req, res) => {
+// Route for creating orders (POST /orders)
+app.post('/orders', async (req, res) => {
   const { user_id, product_id, quantity } = req.body;
   try {
     const [result] = await promisePool.query(
-      "INSERT INTO orders (user_id, product_id, quantity) VALUES (?, ?, ?)",
+      'INSERT INTO orders (user_id, product_id, quantity) VALUES (?, ?, ?)',
       [user_id, product_id, quantity]
     );
-    res.json({ success: true, orderId: result.insertId });
+    res.status(200).json({ success: true, orderId: result.insertId });
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ error: 'Database query failed', details: err });
   }
 });
 
-app.get("/orders", async (req, res) => {
+// Route for getting all orders (GET /orders)
+app.get('/orders', async (req, res) => {
   const query = `
-      SELECT 
-        orders.id AS order_id,
-        orders.user_id,
-        users.username,
-        orders.product_id,
-        products.name AS product_name,
-        orders.quantity
-      FROM orders
-      JOIN users ON orders.user_id = users.id
-      JOIN products ON orders.product_id = products.id
-    `;
+    SELECT 
+      orders.id AS order_id,
+      orders.user_id,
+      users.username,
+      orders.product_id,
+      products.name AS product_name,
+      orders.quantity
+    FROM orders
+    JOIN users ON orders.user_id = users.id
+    JOIN products ON orders.product_id = products.id
+  `;
   try {
     const [results] = await promisePool.query(query);
-    res.json(results);
+    res.status(200).json(results); // Return orders in JSON format
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ error: 'Database query failed', details: err });
   }
 });
 
-app.listen(4000, () => console.log("Server running on port 4000"));
+// Start the server locally (for testing)
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
